@@ -25,21 +25,26 @@ $app->get('/', function() use($app) {
     $app['monolog']->addDebug('logging output.');
   }
 
-  // TODO put this into a Service
   $api = new SpotifyWebAPI\SpotifyWebAPI();
-  $trackIds = array(
-    '1LeItUMezKA1HdCHxYICed',
-    '7EjyzZcbLxW7PaaLua9Ksb',
-    '3HwePAJXjBJSaFICfPWYUl'
-  );
-  $tracks = [];
-  foreach ($trackIds as $track) {
-    array_push($tracks, $api->getTrack($track));
-  }
 
-  return $app['twig']->render('index.html', array(
-    'tracks' => $tracks
-  ));
+  // TODO put this into a Service
+  $url = parse_url("mysql://b1e1b2fbeaf53f:42dd4cda@us-cdbr-iron-east-02.cleardb.net/heroku_9bf566e09227697?reconnect=true");
+  $server = $url["host"];
+  $username = $url["user"];
+  $password = $url["pass"];
+  $db = substr($url["path"], 1);
+  $conn = new mysqli($server, $username, $password, $db);
+  if ($result = $conn->query("SELECT track, description FROM entries LIMIT 10")) {
+    $tracks = [];
+    while($row = $result->fetch_object()) {
+      $row->track = $api->getTrack($row->track);
+      $entries[] = $row;
+    }
+    $result->close();
+    return $app['twig']->render('index.html', array(
+      'entries' => $entries
+    ));
+  }
 });
 
 $app->get('/testdatabase', function() use($app) {
@@ -73,7 +78,6 @@ $app->get('/testdatabase', function() use($app) {
 $app->get('/api/mockdata', function() use($app) {
   $api = new SpotifyWebAPI\SpotifyWebAPI();
   $track = $api->getTrack('7EjyzZcbLxW7PaaLua9Ksb');
-
   return $app->json($track);
 });
 

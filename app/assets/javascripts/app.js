@@ -1,4 +1,5 @@
 let $ = require('jquery');
+let twig = require('twig').twig;
 
 /*
  * Config
@@ -109,36 +110,46 @@ class SpotifyService {
 }
 
 /*
- * NewPostApp
+ * NewEntryApp
  * Create a new entry via logging into Spotify.
  */
-class NewPostApp {
+class NewEntryApp {
 
   constructor() {
+    this.container = document.getElementById('create-entry-container');
     this.spotifyService = new SpotifyService();
   }
 
   start() {
     this.spotifyService.checkAuth().then(function() {
       $('#login-form').hide();
-      $('#create-post-form').show();
+      $('#create-entry-form').show();
     }, function() {
       $('#login-form').show();
-      $('#create-post-form').hide();
+      $('#create-entry-form').hide();
     });
 
     this.attachEventHandlers();
   }
 
   attachEventHandlers() {
-    $('#login-button').on('click', function(e) {
+    document.getElementById('login-button').addEventListener('click', function(e) {
       this.spotifyService.login();
     }.bind(this));
 
-    $('#create-post-form input').on('keyup', function (e) {
+    document.getElementById('song-input').addEventListener('keyup', function (e) {
       this.spotifyService.searchTracks(e.currentTarget.value).then(function(tracks) {
         console.log(tracks);
       });
+    }.bind(this));
+  }
+
+  render() {
+    $.get('assets/templates/new-entry.html', function(data) {
+      var template = twig({
+        data: data
+      });
+      this.container.innerHTML = template.render();
     }.bind(this));
   }
 
@@ -148,11 +159,11 @@ class NewPostApp {
  * We are using the server to bootstrap some information on the page. Otherwise
  * when the page loads two client-side modules are started:
  *
- * 1. NewPostApp: create a new entry via logging into Spotify
- * 2. PostListApp: view entries created by your and others
+ * 1. NewEntryApp: create a new entry via logging into Spotify
+ * 2. EntryListApp: view entries created by your and others
  *
  */
 $(document).ready(function() {
-  var newPostApp = new NewPostApp();
-  newPostApp.start();
+  var newEntryApp = new NewEntryApp();
+  newEntryApp.start();
 });

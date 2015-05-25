@@ -14,36 +14,10 @@
     Create an entry. Eventually you might be able to map out your life's soundtrack.</p>-->
   </div>
   <div id="create-entry-container" class="jumbotron">
-    <div id="login-form">
-      <button id="login-button" class="btn btn-sm btn-primary">Login to Spotify</button>
-    </div>
-    <div class="row">
-      <form id="create-entry-form" class="col-sm-6 col-sm-offset-3" style="display:none;">
-        <div class="form-group">
-          <input type="email" class="form-control" id="song" placeholder="Type in a track name...">
-        </div>
-        <textarea class="form-control" rows="3"></textarea>
-        <button type="submit" class="btn btn-default">Submit</button>
-      </form>
-    </div>
+    {% include "templates/new-entry.html" %}
   </div>
   <div id="entries-container" class="jumbotron bg-secondary">
-    <div class="entries">
-      {% for entry in entries %}
-      <div class="entry row">
-        <div class="col-sm-6">
-          <h3>{{ entry.description }}</h3>
-        </div>
-        <div class="col-sm-6">
-          <h3>{{ entry.track.name }}</h3>
-          <picture alt="Description of content for accessability">
-            <source srcset="{{ entry.track.album.images[1].url }}" />
-            <img src="{{ entry.track.album.images[1].url }}" alt="{{ entry.track.album.name }}" lazyload>
-          </picture>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
+    {% include "templates/entries-list.html" %}
   </div>
 
 </div>

@@ -60,7 +60,7 @@ module.exports = function(env) {
 
   if(env === 'production') {
     webpackConfig.plugins.push(
-      new webpackManifest(publicPath, 'public'),
+      new webpackManifest(publicPath, 'web/assets'),
       new webpack.DefinePlugin({
         'process.env': {
           'NODE_ENV': JSON.stringify('production')

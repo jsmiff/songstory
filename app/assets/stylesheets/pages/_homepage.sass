@@ -1,0 +1,36 @@
+.homepage
+
+  .jumbotron
+    color: #fff
+    margin: 0
+
+  .heart
+    position: relative
+    width: 100px
+    height: 90px
+    margin: 30px auto
+
+    &:before, &:after
+      position: absolute
+      content: ""
+      left: 50px
+      top: 0
+      width: 50px
+      height: 80px
+      background: #fff
+      border-radius: 50px 50px 0 0
+      transform: rotate(-45deg)
+      transform-origin: 0 100%
+
+    &:after
+      left: 0
+      transform: rotate(45deg)
+      transform-origin: 100% 100%
+
+  #random-posts-container
+    min-height: 600px
+
+  #create-post-container
+    background: #fff
+    color: #FE4365
+

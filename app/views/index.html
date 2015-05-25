@@ -1,0 +1,49 @@
+{% extends '/layouts/application.html' %}
+
+{% block content %}
+<div class="homepage">
+  <div class="jumbotron bg-primary">
+    <h2>Song Story</h2>
+    <h1 class="heart">♥</h1>
+    <p>Share an anonymous story about a song<p>
+    <!--
+    <p>The idea is this: songs can are part of important points in our lives.
+    Does a song remind you of when you met your significant other?
+    The song you listened to during a big move?
+    A track that one of your parents played when you were growing up?
+    Create a post. Eventually you might be able to map out your life's soundtrack.</p>-->
+  </div>
+  <div id="create-post-container" class="jumbotron">
+    <div id="login-form">
+      <button id="login-button" class="btn btn-sm btn-primary">Login to Spotify</button>
+    </div>
+    <div class="row">
+      <form id="create-post-form" class="col-sm-6 col-sm-offset-3" style="display:none;">
+        <div class="form-group">
+          <input type="email" class="form-control" id="song" placeholder="Type in a track name...">
+        </div>
+        <textarea class="form-control" rows="3"></textarea>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+    </div>
+  </div>
+  <div id="random-posts-container" class="jumbotron bg-secondary">
+    <div class="posts">
+      {% for track in tracks %}
+      <div class="post">
+        <h3>{{ track.name }}</h3>
+        <picture alt="Description of content for accessability">
+          <source srcset="{{ track.album.images[1].url }}" />
+          <img src="{{ track.album.images[1].url }}" alt="{{ track.album.name }}" lazyload>
+        </picture>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="assets/javascripts/app.js"></script>
+{% endblock %}

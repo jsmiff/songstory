@@ -104,7 +104,7 @@ webpackJsonp([0,1],[
 	    key: 'login',
 	    value: function login() {
 	      var client_id = '848f01fd5e66406d96e587804fcf9a13';
-	      var redirect_uri = 'http://songstory.herokuapp.com/callback';
+	      var redirect_uri = 'http://songstory.herokuapp.com';
 	      var scopes = 'playlist-modify-public';
 	      if (document.location.hostname == 'localhost') {
 	        redirect_uri = LOCAL_URL;

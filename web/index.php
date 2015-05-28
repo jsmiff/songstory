@@ -18,7 +18,7 @@ if($app['debug'] === true) {
   ));
 }
 
-// Our web handlers
+// Web handlers
 
 $app->get('/', function() use($app) {
   if($app['debug'] === true) {
@@ -47,8 +47,9 @@ $app->get('/', function() use($app) {
   }
 });
 
-$app->get('/testdatabase', function() use($app) {
-  $url = parse_url("mysql://b1e1b2fbeaf53f:42dd4cda@us-cdbr-iron-east-02.cleardb.net/heroku_9bf566e09227697?reconnect=true");
+$app->get('/resetdatabase', function() use($app) {
+  $config = include('../config.php');
+  $url = parse_url($config['DB_URL']);
   $server = $url["host"];
   $username = $url["user"];
   $password = $url["pass"];
@@ -59,7 +60,11 @@ $app->get('/testdatabase', function() use($app) {
     echo "entries table created \n";
   }
 
-  if($insert = $conn->query("INSERT entries (track, description) VALUES ('1LeItUMezKA1HdCHxYICed', 'Song from my childhood')")) {
+  if($insert = $conn->query("INSERT entries (track, description) VALUES ('1LeItUMezKA1HdCHxYICed', 'Saw this song performed live Summer of 2014 with my friend from Salt Lake and it was an amazing show')")) {
+    echo "data seeded \n";
+  }
+
+  if($insert = $conn->query("INSERT entries (track, description) VALUES ('5qWgGPylB0Al9IVq2HKTHE', 'Drove down to Mardi Gras from Virginia with no iPod jack and this was the only CD we had. Perfect song for driving through the night.')")) {
     echo "data seeded \n";
   }
 

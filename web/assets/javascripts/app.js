@@ -11,194 +11,24 @@ webpackJsonp([0,1],[
 
 	'use strict';
 	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	var _jquery = __webpack_require__(2);
 	
-	var $ = __webpack_require__(2);
-	var twig = __webpack_require__(3).twig;
+	var _jquery2 = _interopRequireDefault(_jquery);
 	
-	/*
-	 * Config
-	 */
-	var LOCAL_URL = 'http://localhost:3000/spotify/web';
-	
-	/*
-	 * Spotify Service
-	 * Modified code from https://github.com/plamere/playlistminer/
-	 */
-	
-	var SpotifyService = (function () {
-	  function SpotifyService() {
-	    _classCallCheck(this, SpotifyService);
-	
-	    this.credentials = {};
-	  }
-	
-	  _createClass(SpotifyService, [{
-	    key: '_getTime',
-	    value: function _getTime() {
-	      return Math.round(new Date().getTime() / 1000);
-	    }
-	  }, {
-	    key: '_callSpotify',
-	    value: function _callSpotify(url, data) {
-	      return $.ajax(url, {
-	        dataType: 'json',
-	        data: data,
-	        headers: {
-	          'Authorization': 'Bearer ' + this.credentials.token
-	        }
-	      });
-	    }
-	  }, {
-	    key: 'checkAuth',
-	    value: function checkAuth() {
-	      var _this = this;
-	
-	      return new Promise(function (resolve, reject) {
-	        // if we already have a token and it hasn't expired, use it,
-	        if ('credentials' in localStorage) {
-	          _this.credentials = JSON.parse(localStorage.credentials);
-	        }
-	        if (_this.credentials && _this.credentials.expires > _this._getTime()) {
-	          resolve();
-	        } else {
-	          // we have a token as a hash parameter in the url
-	          // so parse hash
-	          var hash = location.hash.replace(/#/g, '');
-	          var all = hash.split('&');
-	          var args = {};
-	          all.forEach(function (keyvalue) {
-	            var idx = keyvalue.indexOf('=');
-	            var key = keyvalue.substring(0, idx);
-	            var val = keyvalue.substring(idx + 1);
-	            args[key] = val;
-	          });
-	          if (typeof args['access_token'] != 'undefined') {
-	            var g_access_token = args['access_token'];
-	            var expiresAt = _this._getTime() + 3600;
-	            if (typeof args['expires_in'] != 'undefined') {
-	              var expires = parseInt(args['expires_in']);
-	              expiresAt = expires + _this._getTime();
-	            }
-	            _this.credentials = {
-	              token: g_access_token,
-	              expires: expiresAt
-	            };
-	            _this._callSpotify('https://api.spotify.com/v1/me').then((function (user) {
-	              this.credentials.user_id = user.id;
-	              localStorage['credentials'] = JSON.stringify(this.credentials);
-	              location.hash = '';
-	              resolve();
-	            }).bind(_this), function () {
-	              reject();
-	            });
-	          } else {
-	            // otherwise, got to spotify to get auth
-	            reject();
-	          }
-	        }
-	      });
-	    }
-	  }, {
-	    key: 'login',
-	    value: function login() {
-	      var client_id = '848f01fd5e66406d96e587804fcf9a13';
-	      var redirect_uri = 'http://songstory.herokuapp.com';
-	      var scopes = 'playlist-modify-public';
-	      if (document.location.hostname == 'localhost') {
-	        redirect_uri = LOCAL_URL;
-	      }
-	      var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id + '&response_type=token' + '&scope=' + encodeURIComponent(scopes) + '&redirect_uri=' + encodeURIComponent(redirect_uri);
-	      document.location = url;
-	    }
-	  }, {
-	    key: 'searchTracks',
-	    value: function searchTracks(query) {
-	      var _this2 = this;
-	
-	      return new Promise(function (resolve, reject) {
-	        _this2._callSpotify('https://api.spotify.com/v1/search', {
-	          type: 'track',
-	          q: query
-	        }).then(function (data) {
-	          resolve(data.tracks);
-	        }, function () {
-	          reject();
-	        });
-	      });
-	    }
-	  }]);
-	
-	  return SpotifyService;
-	})();
-	
-	/*
-	 * NewEntryApp
-	 * Create a new entry via logging into Spotify.
-	 */
-	
-	var NewEntryApp = (function () {
-	  function NewEntryApp() {
-	    _classCallCheck(this, NewEntryApp);
-	
-	    this.container = document.getElementById('create-entry-container');
-	    this.spotifyService = new SpotifyService();
-	  }
-	
-	  _createClass(NewEntryApp, [{
-	    key: 'start',
-	    value: function start() {
-	      this.spotifyService.checkAuth().then(function () {
-	        $('#login-form').hide();
-	        $('#create-entry-form').show();
-	      }, function () {
-	        $('#login-form').show();
-	        $('#create-entry-form').hide();
-	      });
-	
-	      this.attachEventHandlers();
-	    }
-	  }, {
-	    key: 'attachEventHandlers',
-	    value: function attachEventHandlers() {
-	      document.getElementById('login-button').addEventListener('click', (function (e) {
-	        this.spotifyService.login();
-	      }).bind(this));
-	
-	      document.getElementById('song-input').addEventListener('keyup', (function (e) {
-	        this.spotifyService.searchTracks(e.currentTarget.value).then(function (tracks) {
-	          console.log(tracks);
-	        });
-	      }).bind(this));
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      $.get('assets/templates/new-entry.html', (function (data) {
-	        var template = twig({
-	          data: data
-	        });
-	        this.container.innerHTML = template.render();
-	      }).bind(this));
-	    }
-	  }]);
-	
-	  return NewEntryApp;
-	})();
+	var _modulesNewEntry = __webpack_require__(10);
 	
 	/*
 	 * We are using the server to bootstrap some information on the page. Otherwise
-	 * when the page loads two client-side modules are started:
+	 * when the page loads client-side modules are started:
 	 *
-	 * 1. NewEntryApp: create a new entry via logging into Spotify
-	 * 2. EntryListApp: view entries created by your and others
+	 * 1. NewEntryView: create a new entry via logging into Spotify
 	 *
 	 */
-	$(document).ready(function () {
-	  var newEntryApp = new NewEntryApp();
-	  newEntryApp.start();
+	(0, _jquery2['default'])(document).ready(function () {
+	  var newEntryView = new _modulesNewEntry.NewEntryView();
+	  newEntryView.start();
 	});
 
 /***/ },
@@ -9783,6 +9613,256 @@ webpackJsonp([0,1],[
 	};
 	process.umask = function() { return 0; };
 
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var _jquery = __webpack_require__(2);
+	
+	var _jquery2 = _interopRequireDefault(_jquery);
+	
+	var _config = __webpack_require__(9);
+	
+	/*
+	 * Spotify Service
+	 * Modified code from https://github.com/plamere/playlistminer/
+	 * Handles authentication for Spotify users and also serves as a module
+	 * to query the Spotify Web API
+	 */
+	
+	var SpotifyService = (function () {
+	  function SpotifyService() {
+	    _classCallCheck(this, SpotifyService);
+	
+	    this.credentials = {};
+	  }
+	
+	  _createClass(SpotifyService, [{
+	    key: '_getTime',
+	    value: function _getTime() {
+	      return Math.round(new Date().getTime() / 1000);
+	    }
+	  }, {
+	    key: '_callSpotify',
+	    value: function _callSpotify(url, data) {
+	      return _jquery2['default'].ajax(url, {
+	        dataType: 'json',
+	        data: data,
+	        headers: {
+	          'Authorization': 'Bearer ' + this.credentials.token
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'checkAuth',
+	    value: function checkAuth() {
+	      var _this = this;
+	
+	      return new Promise(function (resolve, reject) {
+	        // if we already have a token and it hasn't expired, use it,
+	        if ('credentials' in localStorage) {
+	          _this.credentials = JSON.parse(localStorage.credentials);
+	        }
+	        if (_this.credentials && _this.credentials.expires > _this._getTime()) {
+	          resolve();
+	        } else {
+	          // we have a token as a hash parameter in the url
+	          // so parse hash
+	          var hash = location.hash.replace(/#/g, '');
+	          var all = hash.split('&');
+	          var args = {};
+	          all.forEach(function (keyvalue) {
+	            var idx = keyvalue.indexOf('=');
+	            var key = keyvalue.substring(0, idx);
+	            var val = keyvalue.substring(idx + 1);
+	            args[key] = val;
+	          });
+	          if (typeof args['access_token'] != 'undefined') {
+	            var g_access_token = args['access_token'];
+	            var expiresAt = _this._getTime() + 3600;
+	            if (typeof args['expires_in'] != 'undefined') {
+	              var expires = parseInt(args['expires_in']);
+	              expiresAt = expires + _this._getTime();
+	            }
+	            _this.credentials = {
+	              token: g_access_token,
+	              expires: expiresAt
+	            };
+	            _this._callSpotify('https://api.spotify.com/v1/me').then((function (user) {
+	              this.credentials.user_id = user.id;
+	              localStorage['credentials'] = JSON.stringify(this.credentials);
+	              location.hash = '';
+	              resolve();
+	            }).bind(_this), function () {
+	              reject();
+	            });
+	          } else {
+	            // otherwise, got to spotify to get auth
+	            reject();
+	          }
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'login',
+	    value: function login() {
+	      var client_id = '848f01fd5e66406d96e587804fcf9a13';
+	      var redirect_uri = 'http://songstory.herokuapp.com';
+	      var scopes = 'playlist-modify-public';
+	      if (document.location.hostname == 'localhost') {
+	        redirect_uri = _config.LOCAL_URL;
+	      }
+	      var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id + '&response_type=token' + '&scope=' + encodeURIComponent(scopes) + '&redirect_uri=' + encodeURIComponent(redirect_uri);
+	      document.location = url;
+	    }
+	  }, {
+	    key: 'searchTracks',
+	    value: function searchTracks(query) {
+	      var _this2 = this;
+	
+	      return new Promise(function (resolve, reject) {
+	        _this2._callSpotify('https://api.spotify.com/v1/search', {
+	          type: 'track',
+	          q: query
+	        }).then(function (data) {
+	          resolve(data.tracks);
+	        }, function () {
+	          reject();
+	        });
+	      });
+	    }
+	  }]);
+	
+	  return SpotifyService;
+	})();
+	
+	exports.SpotifyService = SpotifyService;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	 * Config
+	 */
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var LOCAL_URL = "http://localhost:3000/spotify/web";
+	exports.LOCAL_URL = LOCAL_URL;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var _jquery = __webpack_require__(2);
+	
+	var _jquery2 = _interopRequireDefault(_jquery);
+	
+	var _twig = __webpack_require__(3);
+	
+	var _twig2 = _interopRequireDefault(_twig);
+	
+	var _servicesSpotifyService = __webpack_require__(8);
+	
+	var twig = _twig2['default'].twig;
+	
+	/*
+	 * NewEntryView
+	 * Create a new entry via logging into Spotify.
+	 */
+	
+	var NewEntryView = (function () {
+	  function NewEntryView() {
+	    _classCallCheck(this, NewEntryView);
+	
+	    this.container = document.getElementById('create-entry-container');
+	    this.spotifyService = new _servicesSpotifyService.SpotifyService();
+	  }
+	
+	  _createClass(NewEntryView, [{
+	    key: 'start',
+	    value: function start() {
+	      this.spotifyService.checkAuth().then(function () {
+	        (0, _jquery2['default'])('#login-form').hide();
+	        (0, _jquery2['default'])('#create-entry-form').show();
+	      }, function () {
+	        (0, _jquery2['default'])('#login-form').show();
+	        (0, _jquery2['default'])('#create-entry-form').hide();
+	      });
+	
+	      this.attachEventHandlers();
+	    }
+	  }, {
+	    key: 'attachEventHandlers',
+	    value: function attachEventHandlers() {
+	      var _this = this;
+	
+	      document.getElementById('login-button').addEventListener('click', function (e) {
+	        _this.spotifyService.login();
+	      });
+	
+	      document.getElementById('song-input').addEventListener('keyup', function (e) {});
+	
+	      document.getElementById('song-input').addEventListener('keyup', function (e) {
+	        _this.spotifyService.searchTracks(e.currentTarget.value).then(function (tracks) {
+	
+	          var fragment = document.createDocumentFragment();
+	          tracks.items.forEach(function (track) {
+	            var li = document.createElement('li');
+	            (0, _jquery2['default'])(li).html('<p>' + track.name + '</p>');
+	            (0, _jquery2['default'])(fragment).append(li);
+	          });
+	          (0, _jquery2['default'])('#search-results').empty().append(fragment);
+	        });
+	      });
+	    }
+	
+	    // TODO implement but first see if the server has rendered the view already, also be mindful of other routines in start()
+	    /*render() {
+	      $.get('assets/templates/new-entry.html', function(data) {
+	        var template = twig({
+	          data: data
+	        });
+	        this.container.innerHTML = template.render();
+	      }.bind(this));
+	    }*/
+	
+	  }]);
+	
+	  return NewEntryView;
+	})();
+	
+	exports.NewEntryView = NewEntryView;
+	
+	// TODO scroll this whole parent container to the top of the viewport, putting input box at the very top with room below to view results
 
 /***/ }
 ]);
